@@ -13,10 +13,10 @@ J = 0;
 % Instructions: Compute the cost of a particular choice of theta
 %               You should set J to the cost.
 
+% Written with mathematical notation in mind
+%J = (1/(2*m))*sum(((X*theta)-y).^2)
 
-
-
-
+% Written in matrix multiplication shorthand
+J = (((X*theta)-y)'*((X*theta)-y))/(2*m);
 % =========================================================================
-
 end
