@@ -8,8 +8,8 @@ function [J grad] = nnCostFunction(nn_params, ...
 %   [J grad] = NNCOSTFUNCTON(nn_params, hidden_layer_size, num_labels, ...
 %   X, y, lambda) computes the cost and gradient of the neural network. The
 %   parameters for the neural network are "unrolled" into the vector
-%   nn_params and need to be converted back into the weight matrices. 
-% 
+%   nn_params and need to be converted back into the weight matrices.
+%
 %   The returned parameter grad should be a "unrolled" vector of the
 %   partial derivatives of the neural network.
 %
@@ -24,8 +24,8 @@ Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):en
 
 % Setup some useful variables
 m = size(X, 1);
-         
-% You need to return the following variables correctly 
+
+% You need to return the following variables correctly
 J = 0;
 Theta1_grad = zeros(size(Theta1));
 Theta2_grad = zeros(size(Theta2));
@@ -46,12 +46,12 @@ Theta2_grad = zeros(size(Theta2));
 %         that your implementation is correct by running checkNNGradients
 %
 %         Note: The vector y passed into the function is a vector of labels
-%               containing values from 1..K. You need to map this vector into a 
+%               containing values from 1..K. You need to map this vector into a
 %               binary vector of 1's and 0's to be used with the neural network
 %               cost function.
 %
 %         Hint: We recommend implementing backpropagation using a for-loop
-%               over the training examples if you are implementing it for the 
+%               over the training examples if you are implementing it for the
 %               first time.
 %
 % Part 3: Implement regularization with the cost function and gradients.
@@ -62,23 +62,47 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+% Add bias unit to Training Examples
+X = [ones(m, 1) X];
 
+z2 = sigmoid(X * Theta1');
+z2 = [ones(size(z2,1),1) z2];
 
+z3 = sigmoid(z2 * Theta2');
 
+y_matrix = [];
 
+% Create matrix with y as only 1 and 0 for classification
+for k=1:num_labels
+  y_vector = [];
+  for i = 1:size(y,1)
+    if y(i)==k
+      y_vector = [y_vector;1];
+    else
+      y_vector = [y_vector;0];
+    endif
+  endfor
+  y_matrix = [y_matrix y_vector];
+endfor
+clear y_vector;
 
+J_sum = 0;
 
+for k = 1:num_labels
+  yt = y_matrix(:,k);
+  J_sum = J_sum + (-yt'*log(z3)-(1-yt)'*log(1-z3))(k);
+endfor
+hyp = J_sum/m;
 
+t1 = Theta1(:,2:end)(:);
+t2 = Theta2(:,2:end)(:);
 
+r1 = t1'*t1;
+r2 = t2'*t2;
 
+reg = (lambda/(2*m)).*(r1+r2);
 
-
-
-
-
-
-
-
+J = hyp + reg;
 
 % -------------------------------------------------------------
 
@@ -86,6 +110,4 @@ Theta2_grad = zeros(size(Theta2));
 
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
-
-
 end
