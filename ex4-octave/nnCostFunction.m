@@ -62,17 +62,22 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
-% Add bias unit to Training Examples
-X = [ones(m, 1) X];
+% Forward Propogation with Gradient Computation
+a1 = X;
+a1 = [ones(size(a1,1),1) a1];
 
-z2 = sigmoid(X * Theta1');
-z2 = [ones(size(z2,1),1) z2];
+z2 = a1 * Theta1';
+a2 = sigmoid(z2);
+a2 = [ones(size(a2,1),1) a2];
 
-z3 = sigmoid(z2 * Theta2');
+z3 = a2 * Theta2';
+a3 = sigmoid(z3);
 
-y_matrix = [];
+hx = a3;
 
 % Create matrix with y as only 1 and 0 for classification
+Y = [];
+
 for k=1:num_labels
   y_vector = [];
   for i = 1:size(y,1)
@@ -82,20 +87,21 @@ for k=1:num_labels
       y_vector = [y_vector;0];
     endif
   endfor
-  y_matrix = [y_matrix y_vector];
+  Y = [Y y_vector];
 endfor
-clear y_vector;
+clear y_vector; clear i;
 
 J_sum = 0;
 
 for k = 1:num_labels
-  yt = y_matrix(:,k);
-  J_sum = J_sum + (-yt'*log(z3)-(1-yt)'*log(1-z3))(k);
+  yt = Y(:,k);
+  ht = hx(:,k);
+  J_sum = J_sum + (-yt' * log(ht)-(1-yt')*log(1-ht));
 endfor
 hyp = J_sum/m;
 
-t1 = Theta1(:,2:end)(:);
-t2 = Theta2(:,2:end)(:);
+t1 = Theta1(:,2:end)(:); % Roll out and do not include the bias term
+t2 = Theta2(:,2:end)(:); % Roll out and do not include the bias term
 
 r1 = t1'*t1;
 r2 = t2'*t2;
@@ -106,8 +112,29 @@ J = hyp + reg;
 
 % -------------------------------------------------------------
 
-% =========================================================================
+DELTA1 = 0;
+DELTA2 = 0;
+z2 = [ones(size(z2,1),1) z2];
 
+for t = 1:m
+  a3 = hx(t,:);
+  yt = Y(t,:);
+
+  delta3 = a3-yt;
+
+  delta2 = (delta3 * Theta2).*sigmoidGradient(z2(t,:));
+  delta2 = delta2(:,2:end);
+
+  DELTA2 = DELTA2 + delta3' * a2(t,:);
+  DELTA1 = DELTA1 + delta2' * a1(t,:);
+endfor
+
+Theta1_grad = (DELTA1 / m) + (lambda/m) * Theta1;
+Theta2_grad = (DELTA2 / m) + (lambda/m) * Theta2;
+
+Theta1_grad(:,1) = (DELTA1(:,1) / m);
+Theta2_grad(:,1) = (DELTA2(:,1) / m);
+% =========================================================================
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
 end
