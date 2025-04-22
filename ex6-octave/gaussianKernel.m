@@ -16,11 +16,13 @@ sim = 0;
 %
 %
 
+difference = x1 - x2;
 
+numerator = difference' * difference;
 
+denominator = 2*sigma^2;
 
-
+sim = exp(-(numerator/denominator));
 
 % =============================================================
-    
 end
